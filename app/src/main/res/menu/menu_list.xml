@@ -1,0 +1,15 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="net.auliaisb.sawitproweighbridgeticket.MainActivity">
+    <item
+        android:id="@+id/sort"
+        android:orderInCategory="100"
+        android:title="@string/sort"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/filter"
+        android:orderInCategory="100"
+        android:title="@string/filter"
+        app:showAsAction="never" />
+</menu>
