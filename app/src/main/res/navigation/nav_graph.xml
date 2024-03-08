@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/ListTicketPage">
+
+    <fragment
+        android:id="@+id/ListTicketPage"
+        android:name="net.auliaisb.sawitproweighbridgeticket.presentation.listticket.ListTicketPage"
+        android:label="@string/list_ticket_page_label"
+        tools:layout="@layout/fragment_list_ticket">
+
+        <action
+            android:id="@+id/action_ListTicketPage_to_AddTicketPage"
+            app:destination="@id/AddTicketPage" />
+    </fragment>
+    <fragment
+        android:id="@+id/AddTicketPage"
+        android:name="net.auliaisb.sawitproweighbridgeticket.presentation.AddTicketPage"
+        android:label="@string/add_ticket_page_label"
+        tools:layout="@layout/fragment_add_ticket">
+
+        <action
+            android:id="@+id/action_AddTicketPage_to_ListTicketPage"
+            app:destination="@id/ListTicketPage" />
+    </fragment>
+</navigation>
