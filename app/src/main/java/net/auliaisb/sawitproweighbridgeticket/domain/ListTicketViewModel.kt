@@ -1,11 +1,14 @@
 package net.auliaisb.sawitproweighbridgeticket.domain
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.common.base.CharMatcher
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.auliaisb.sawitproweighbridgeticket.data.model.Ticket
-import net.auliaisb.sawitproweighbridgeticket.data.service.TicketService
+import net.auliaisb.sawitproweighbridgeticket.data.repo.TicketRepository
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -13,15 +16,21 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ListTicketViewModel @Inject constructor(
-    private val ticketService: TicketService,
+    private val ticketRepository: TicketRepository,
     private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
-    private val ticketListFlow = ticketService.getTicketList()
-    private var ticketList = emptyList<Ticket>()
+    private val ticketListFlow = ticketRepository.ticketList
+    var ticketList = emptyList<Ticket>()
     var listener: ListTicketEventListener? = null
 
-    fun onEditClicked(id: String) {
-        val ticket = ticketList.find { it.key == id }
+    init {
+        viewModelScope.launch {
+            ticketRepository.syncTicketsWithFirebase()
+        }
+    }
+
+    fun onEditClicked(id: Long?) {
+        val ticket = ticketList.find { it.id == id }
         if (ticket != null) {
             listener?.editTicket(ticket)
         } else {
@@ -31,23 +40,13 @@ class ListTicketViewModel @Inject constructor(
 
     suspend fun getTicketList() {
         withContext(dispatcher) {
-            ticketListFlow.collect { result ->
-                when {
-                    result.isSuccess -> {
-                        result.getOrNull()?.let {
-                            ticketList = it
-                            listener?.showData(
-                                ticketList.map { ticket ->
-                                    UITicket.from(ticket)
-                                }
-                            )
-                        }
+            ticketListFlow.collect { list ->
+                ticketList = list
+                listener?.showData(
+                    ticketList.map { ticket ->
+                        UITicket.from(ticket)
                     }
-
-                    else -> {
-                        listener?.showError(result.exceptionOrNull()?.message.orEmpty())
-                    }
-                }
+                )
             }
         }
     }

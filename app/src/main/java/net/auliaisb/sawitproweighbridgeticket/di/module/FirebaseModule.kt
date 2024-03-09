@@ -11,7 +11,7 @@ import net.auliaisb.sawitproweighbridgeticket.BuildConfig
 
 @Module
 @InstallIn(ViewModelComponent::class)
-class FirebaseModule {
+object FirebaseModule {
     @Provides
     fun providesDatabaseModule(): FirebaseDatabase {
         return Firebase.database(BuildConfig.FIREBASE_DB_URL)

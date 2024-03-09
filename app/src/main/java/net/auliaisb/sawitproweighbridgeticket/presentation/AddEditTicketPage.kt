@@ -112,14 +112,6 @@ class AddEditTicketPage : Fragment() {
                 binding.netWeightText.setText(netWeight.toString())
             }
 
-            override fun showLoading() {
-                binding.loadingIndicator.show()
-            }
-
-            override fun hideLoading() {
-                binding.loadingIndicator.hide()
-            }
-
             override fun setDate(date: String) {
                 binding.dateText.setText(date)
             }
@@ -162,6 +154,10 @@ class AddEditTicketPage : Fragment() {
                     getString(R.string.success_submit_ticket),
                     Snackbar.LENGTH_LONG
                 ).show()
+                findNavController().navigateUp()
+            }
+
+            override fun finish() {
                 findNavController().navigateUp()
             }
 

@@ -7,7 +7,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 data class UITicket(
-    val id: String,
+    val id: Long?,
     val dateTime: String,
     val driverName: String,
     val netWeight: String,
@@ -24,7 +24,7 @@ data class UITicket(
             }
 
             return UITicket(
-                id = ticket.key.orEmpty(),
+                id = ticket.id,
                 dateTime = strDateTime.orEmpty(),
                 driverName = ticket.driverName.orEmpty(),
                 netWeight = ticket.netWeight.toString(),

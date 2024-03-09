@@ -17,6 +17,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import com.google.common.base.CharMatcher
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import net.auliaisb.sawitproweighbridgeticket.Extensions.dpToPx
@@ -96,7 +97,7 @@ class ListTicketPage : Fragment(), ListTicketViewModel.ListTicketEventListener, 
         viewLifecycleOwner.lifecycleScope.launch {
             listAdapter.submitList(listTicket)
             listAdapter.listener = object : ListTicketAdapter.ListTicketAdapterInterface {
-                override fun onEditClicked(id: String) {
+                override fun onEditClicked(id: Long?) {
                     viewModel.onEditClicked(id)
                 }
             }

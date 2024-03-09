@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 import net.auliaisb.sawitproweighbridgeticket.Extensions.round
 import net.auliaisb.sawitproweighbridgeticket.R
 import net.auliaisb.sawitproweighbridgeticket.data.model.Ticket
-import net.auliaisb.sawitproweighbridgeticket.data.service.TicketService
+import net.auliaisb.sawitproweighbridgeticket.data.repo.TicketRepository
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddEditTicketViewModel @Inject constructor(
-    private val ticketService: TicketService,
+    private val ticketRepository: TicketRepository,
     private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
@@ -32,20 +32,24 @@ class AddEditTicketViewModel @Inject constructor(
     private var inboundWeight: Double = 0.0
     private var outboundWeight: Double = 0.0
     private var netWeight: Double = 0.0
+    private var id: Long? = null
     private var key: String? = null
 
     fun init(ticket: Ticket?) {
-        if(ticket == null) {
+        if (ticket == null) {
             showDate()
             showTime()
         } else {
             editTicket(ticket)
         }
     }
+
     private fun editTicket(ticket: Ticket) {
         key = ticket.key
+        id = ticket.id
         ticket.dateTime?.let {
-            selectedDateTime = Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDateTime()
+            selectedDateTime =
+                Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDateTime()
             setDate(selectedDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
             setTime(selectedDateTime.hour, selectedDateTime.minute)
         }
@@ -59,11 +63,11 @@ class AddEditTicketViewModel @Inject constructor(
 
         if (!validateForm(licenseNum, driverName)) return
 
-        addTicketPageListener?.showLoading()
         selectedDateTime = LocalDateTime.of(selectedDate, selectedTime)
 
         val ticket = Ticket(
             key = key,
+            id = id,
             dateTime = selectedDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
             licenseNumber = licenseNum,
             driverName = driverName,
@@ -73,20 +77,19 @@ class AddEditTicketViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            val result: Result<Boolean>
+            val result: Result<String?>
             withContext(dispatcher) {
-                if(key == null){
-                    result = ticketService.addTicket(ticket)
+                if (id == null) {
+                    result = ticketRepository.addTicket(ticket)
                 } else {
-                    result = ticketService.editTicket(ticket)
+                    result = ticketRepository.editTicket(ticket)
                 }
             }
             result.onSuccess {
-                addTicketPageListener?.hideLoading()
                 addTicketPageListener?.onSuccessSubmit()
             }.onFailure {
-                addTicketPageListener?.hideLoading()
                 addTicketPageListener?.onError(it.message.orEmpty())
+                addTicketPageListener?.finish()
             }
         }
     }
@@ -179,8 +182,6 @@ class AddEditTicketViewModel @Inject constructor(
 
     interface AddTicketPageListener {
         fun setNetWeightText(netWeight: Double)
-        fun showLoading()
-        fun hideLoading()
         fun setDate(date: String)
         fun setTime(time: String)
         fun onError(message: String)
@@ -190,6 +191,7 @@ class AddEditTicketViewModel @Inject constructor(
         fun setErrorOutboundWeight(stringRes: Int)
         fun setErrorNetWeight(stringRes: Int)
         fun onSuccessSubmit()
+        fun finish()
         fun populateForm(ticket: UITicket)
     }
 }
