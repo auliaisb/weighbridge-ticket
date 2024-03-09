@@ -7,6 +7,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 data class UITicket(
+    val id: String,
     val dateTime: String,
     val driverName: String,
     val netWeight: String,
@@ -23,11 +24,12 @@ data class UITicket(
             }
 
             return UITicket(
+                id = ticket.key.orEmpty(),
                 dateTime = strDateTime.orEmpty(),
                 driverName = ticket.driverName.orEmpty(),
-                netWeight = "Net weight: ${ticket.netWeight.toString()}",
-                inboundWeight = "Inbound weight: ${ticket.inboundWeight.toString()}",
-                outboundWeight = "Outbound weight: ${ticket.outboundWeight.toString()}",
+                netWeight = ticket.netWeight.toString(),
+                inboundWeight = ticket.inboundWeight.toString(),
+                outboundWeight = ticket.outboundWeight.toString(),
                 license = ticket.licenseNumber.orEmpty()
             )
         }

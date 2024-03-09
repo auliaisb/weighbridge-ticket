@@ -44,7 +44,7 @@
             android:id="@+id/detail_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/bg_detail_section"
             android:padding="8dp"
             android:visibility="gone"
@@ -86,11 +86,11 @@
             android:id="@+id/edit_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/detail_view"
             app:layout_constraintStart_toStartOf="parent"
             android:text="@string/edit"
-            app:icon="@android:drawable/ic_menu_edit"
-            style="@style/Widget.MaterialComponents.Button.TextButton"/>
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

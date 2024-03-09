@@ -1,37 +1,37 @@
 package net.auliaisb.sawitproweighbridgeticket.presentation.listticket
 
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.core.view.MenuProvider
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView.LayoutManager
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import net.auliaisb.sawitproweighbridgeticket.Extensions.dpToPx
 import net.auliaisb.sawitproweighbridgeticket.R
+import net.auliaisb.sawitproweighbridgeticket.data.model.Ticket
 import net.auliaisb.sawitproweighbridgeticket.databinding.FragmentListTicketBinding
 import net.auliaisb.sawitproweighbridgeticket.domain.ListTicketViewModel
+import net.auliaisb.sawitproweighbridgeticket.domain.UITicket
 import net.auliaisb.sawitproweighbridgeticket.utils.MarginItemDecoration
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
 @AndroidEntryPoint
-class ListTicketPage : Fragment() {
+class ListTicketPage : Fragment(), ListTicketViewModel.ListTicketEventListener {
 
     private var _binding: FragmentListTicketBinding? = null
 
@@ -63,6 +63,7 @@ class ListTicketPage : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel.listener = this
         loadList()
         binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_ListTicketPage_to_AddTicketPage)
@@ -77,11 +78,32 @@ class ListTicketPage : Fragment() {
         }
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.ticketListFlow.collect { listTicket ->
-                    listAdapter.submitList(listTicket)
+                viewModel.getTicketList()
+            }
+        }
+    }
+
+    override fun showData(listTicket: List<UITicket>?) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            listAdapter.submitList(listTicket)
+            listAdapter.listener = object : ListTicketAdapter.ListTicketAdapterInterface {
+                override fun onEditClicked(id: String) {
+                    viewModel.onEditClicked(id)
                 }
             }
         }
+    }
+
+    override fun showError(message: String) {
+        Snackbar.make(
+            requireActivity().findViewById(android.R.id.content),
+            getString(R.string.generic_error),
+            Snackbar.LENGTH_LONG).show()
+    }
+
+    override fun editTicket(ticket: Ticket) {
+        val bundle = bundleOf("ticket" to ticket)
+        findNavController().navigate(R.id.action_ListTicketPage_to_AddTicketPage, bundle)
     }
 
     override fun onDestroyView() {

@@ -25,30 +25,22 @@ class TicketService @Inject constructor(
         }
     }
 
-//    fun getTicketList(onSuccess: (List<Ticket>) -> Unit, onFailure: (Exception) -> Unit) {
-//        fun parseSnapshot(snapshot: DataSnapshot): LiveData<List<Ticket>> {
-//            val tickets = mutableListOf<Ticket>()
-//            for (ticketSnapshot in snapshot.children) {
-//                val ticket = ticketSnapshot.getValue(Ticket::class.java)
-//                ticket?.let {
-//                    tickets.add(it)
-//                }
-//            }
-//            return tickets
-//        }
-//
-//        db.reference.child("tickets").addValueEventListener(object : ValueEventListener {
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                onSuccess.invoke(parseSnapshot(snapshot))
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                onFailure.invoke(error.toException())
-//            }
-//        })
-//    }
+    suspend fun editTicket(ticket: Ticket): Result<Boolean> {
+        val ref = db.reference.child("tickets")
+        val key = ticket.key.orEmpty()
+        return try {
+            val ticketValues = ticket.toMap()
+            val updates = hashMapOf<String, Any>(
+                key to ticketValues
+            )
+            ref.updateChildren(updates).await()
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
-    fun getTicketList(): Flow<List<Ticket>> {
+    fun getTicketList(): Flow<Result<List<Ticket>>> {
         val ref = db.reference.child("tickets")
         return callbackFlow {
             val valueEventListener = object : ValueEventListener {
@@ -58,10 +50,11 @@ class TicketService @Inject constructor(
                         ticket?.key = it.key
                         ticket
                     }
-                    trySend(result).isSuccess
+                    trySend(Result.success(result)).isSuccess
                 }
 
                 override fun onCancelled(error: DatabaseError) {
+                    trySend(Result.failure(error.toException()))
                     close(error.toException())
                 }
             }
