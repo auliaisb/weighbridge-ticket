@@ -3,9 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="net.auliaisb.sawitproweighbridgeticket.MainActivity">
     <item
-        android:id="@+id/sort"
+        android:id="@+id/sort_date"
         android:orderInCategory="100"
-        android:title="@string/sort"
+        android:title="@string/sort_date"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/sort_name"
+        android:orderInCategory="100"
+        android:title="@string/sort_name"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/sort_license"
+        android:orderInCategory="100"
+        android:title="@string/sort_license"
         app:showAsAction="never" />
     <item
         android:id="@+id/filter"

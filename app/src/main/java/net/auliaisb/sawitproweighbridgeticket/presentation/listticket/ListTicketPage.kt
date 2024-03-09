@@ -26,12 +26,13 @@ import net.auliaisb.sawitproweighbridgeticket.databinding.FragmentListTicketBind
 import net.auliaisb.sawitproweighbridgeticket.domain.ListTicketViewModel
 import net.auliaisb.sawitproweighbridgeticket.domain.UITicket
 import net.auliaisb.sawitproweighbridgeticket.utils.MarginItemDecoration
+import java.time.LocalDate
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
 @AndroidEntryPoint
-class ListTicketPage : Fragment(), ListTicketViewModel.ListTicketEventListener {
+class ListTicketPage : Fragment(), ListTicketViewModel.ListTicketEventListener, FilterDialogFragment.FilterDialogListener {
 
     private var _binding: FragmentListTicketBinding? = null
 
@@ -45,6 +46,12 @@ class ListTicketPage : Fragment(), ListTicketViewModel.ListTicketEventListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        _binding = FragmentListTicketBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -52,17 +59,19 @@ class ListTicketPage : Fragment(), ListTicketViewModel.ListTicketEventListener {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when(menuItem.itemId) {
+                    R.id.sort_name -> viewModel.sortByName()
+                    R.id.sort_date -> viewModel.sortByDate()
+                    R.id.sort_license -> viewModel.sortByLicense()
+                    R.id.filter -> {
+                        val filterDialog = FilterDialogFragment.newInstance()
+                        filterDialog.listener = this@ListTicketPage
+                        filterDialog.show(childFragmentManager, "filter")
+                    }
+                }
                 return false
             }
         }, viewLifecycleOwner)
-
-        _binding = FragmentListTicketBinding.inflate(inflater, container, false)
-        return binding.root
-
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         viewModel.listener = this
         loadList()
         binding.fab.setOnClickListener {
@@ -91,6 +100,9 @@ class ListTicketPage : Fragment(), ListTicketViewModel.ListTicketEventListener {
                     viewModel.onEditClicked(id)
                 }
             }
+            view?.post {
+                binding.listItem.scrollToPosition(0)
+            }
         }
     }
 
@@ -98,12 +110,17 @@ class ListTicketPage : Fragment(), ListTicketViewModel.ListTicketEventListener {
         Snackbar.make(
             requireActivity().findViewById(android.R.id.content),
             getString(R.string.generic_error),
-            Snackbar.LENGTH_LONG).show()
+            Snackbar.LENGTH_LONG
+        ).show()
     }
 
     override fun editTicket(ticket: Ticket) {
         val bundle = bundleOf("ticket" to ticket)
         findNavController().navigate(R.id.action_ListTicketPage_to_AddTicketPage, bundle)
+    }
+
+    override fun onSubmitFilter(date: LocalDate?, name: String?, licenseNumber: String?) {
+        viewModel.filter(date, name, licenseNumber)
     }
 
     override fun onDestroyView() {
