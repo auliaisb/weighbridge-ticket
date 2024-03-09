@@ -3,10 +3,12 @@ package net.auliaisb.sawitproweighbridgeticket.domain
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import net.auliaisb.sawitproweighbridgeticket.data.model.Ticket
 import net.auliaisb.sawitproweighbridgeticket.data.service.TicketService
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,7 +22,7 @@ class ListTicketViewModel @Inject constructor(
 
     fun onEditClicked(id: String) {
         val ticket = ticketList.find { it.key == id }
-        if(ticket!= null) {
+        if (ticket != null) {
             listener?.editTicket(ticket)
         } else {
             listener?.showError(Exception("Not found ticket with specific key").message.orEmpty())
@@ -48,6 +50,53 @@ class ListTicketViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun filter(date: LocalDate?, name: String?, license: String?) {
+        listener?.showData(ticketList.filter {
+            if (!name.isNullOrEmpty()) {
+                it.driverName?.contains(name) ?: false
+            } else {
+                true
+            }
+        }.filter {
+            if (date != null) {
+                val itemDate = LocalDate.ofInstant(
+                    it.dateTime?.let { it1 -> Instant.ofEpochMilli(it1) },
+                    ZoneId.systemDefault()
+                )
+                val dayDate = LocalDate.of(itemDate.year, itemDate.month, itemDate.dayOfMonth)
+                dayDate.equals(date)
+            } else {
+                true
+            }
+        }.filter {
+            if (!license.isNullOrEmpty()) {
+                it.licenseNumber?.contains(license) ?: false
+            } else {
+                true
+            }
+        }.map {
+            UITicket.from(it)
+        })
+    }
+
+    fun sortByDate() {
+        listener?.showData(
+            ticketList.sortedByDescending { it.dateTime }.map { UITicket.from(it) }
+        )
+    }
+
+    fun sortByName() {
+        listener?.showData(
+            ticketList.sortedBy { it.driverName }.map { UITicket.from(it) }
+        )
+    }
+
+    fun sortByLicense() {
+        listener?.showData(
+            ticketList.sortedBy { it.licenseNumber }.map { UITicket.from(it) }
+        )
     }
 
     interface ListTicketEventListener {
