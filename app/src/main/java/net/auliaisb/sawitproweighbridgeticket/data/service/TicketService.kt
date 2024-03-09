@@ -13,20 +13,20 @@ import javax.inject.Inject
 
 
 class TicketService @Inject constructor(
-    private val db: FirebaseDatabase
+    db: FirebaseDatabase
 ) {
-    suspend fun addTicket(ticket: Ticket): Result<Boolean> {
-        val ref = db.reference.child("tickets")
+    private val ref = db.reference.child(TICKETS)
+    suspend fun addTicket(ticket: Ticket): Result<String?> {
         return try {
-            ref.push().setValue(ticket).await()
-            Result.success(true)
+            val nodeRef = ref.push().key
+            ref.child(nodeRef.orEmpty()).setValue(ticket).await()
+            Result.success(nodeRef)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    suspend fun editTicket(ticket: Ticket): Result<Boolean> {
-        val ref = db.reference.child("tickets")
+    suspend fun editTicket(ticket: Ticket): Result<String?> {
         val key = ticket.key.orEmpty()
         return try {
             val ticketValues = ticket.toMap()
@@ -34,23 +34,26 @@ class TicketService @Inject constructor(
                 key to ticketValues
             )
             ref.updateChildren(updates).await()
-            Result.success(true)
+            Result.success(key)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
     fun getTicketList(): Flow<Result<List<Ticket>>> {
-        val ref = db.reference.child("tickets")
         return callbackFlow {
             val valueEventListener = object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val result = snapshot.children.mapNotNull {
-                        val ticket = it.getValue(Ticket::class.java)
-                        ticket?.key = it.key
-                        ticket
+                    try {
+                        val result = snapshot.children.mapNotNull {
+                            val ticket = it.getValue(Ticket::class.java)
+                            ticket?.key = it.key
+                            ticket
+                        }
+                        trySend(Result.success(result)).isSuccess
+                    } catch (e: Exception) {
+                        trySend(Result.failure(e))
                     }
-                    trySend(Result.success(result)).isSuccess
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -62,5 +65,9 @@ class TicketService @Inject constructor(
             ref.addValueEventListener(valueEventListener)
             awaitClose { ref.removeEventListener(valueEventListener) }
         }
+    }
+
+    companion object {
+        const val TICKETS = "tickets"
     }
 }

@@ -34,7 +34,7 @@ class ListTicketAdapter :
 
     class ListTicketViewHolder(private val itemBinding: ItemTicketBinding) :
         RecyclerView.ViewHolder(itemBinding.root) {
-        fun onBind(uiTicket: UITicket, onEditClick: (String) -> Unit) {
+        fun onBind(uiTicket: UITicket, onEditClick: (Long?) -> Unit) {
             itemBinding.root.setOnClickListener {
                 val visibility = itemBinding.detailView.visibility
                 val toggleTo = if (visibility == View.GONE) {
@@ -67,6 +67,6 @@ class ListTicketAdapter :
     }
 
     interface ListTicketAdapterInterface {
-        fun onEditClicked(id: String)
+        fun onEditClicked(id: Long?)
     }
 }
