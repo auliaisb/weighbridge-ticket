@@ -17,10 +17,14 @@
     </fragment>
     <fragment
         android:id="@+id/AddTicketPage"
-        android:name="net.auliaisb.sawitproweighbridgeticket.presentation.AddTicketPage"
+        android:name="net.auliaisb.sawitproweighbridgeticket.presentation.AddEditTicketPage"
         android:label="@string/add_ticket_page_label"
         tools:layout="@layout/fragment_add_ticket">
-
+        <argument android:name="ticketPayload"
+            app:argType="net.auliaisb.sawitproweighbridgeticket.data.model.Ticket"
+            app:nullable="true"
+            android:defaultValue="@null"
+            />
         <action
             android:id="@+id/action_AddTicketPage_to_ListTicketPage"
             app:destination="@id/ListTicketPage" />

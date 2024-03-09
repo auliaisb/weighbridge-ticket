@@ -11,15 +11,17 @@ import net.auliaisb.sawitproweighbridgeticket.domain.UITicket
 
 class ListTicketAdapter :
     ListAdapter<UITicket, ListTicketAdapter.ListTicketViewHolder>(TicketDiffCallback()) {
+    var listener: ListTicketAdapterInterface? = null
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListTicketViewHolder {
-        val itemBinding = ItemTicketBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val itemBinding =
+            ItemTicketBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ListTicketViewHolder(itemBinding)
     }
 
     override fun onBindViewHolder(holder: ListTicketViewHolder, position: Int) {
-        holder.onBind(getItem(position), {
-
-        })
+        holder.onBind(getItem(position)) {
+            listener?.onEditClicked(it)
+        }
     }
 
     class TicketDiffCallback : DiffUtil.ItemCallback<UITicket>() {
@@ -30,27 +32,41 @@ class ListTicketAdapter :
             oldItem == newItem
     }
 
-    class ListTicketViewHolder(private val itemBinding: ItemTicketBinding) : RecyclerView.ViewHolder(itemBinding.root) {
-        fun onBind(uiTicket: UITicket, onEditClick: () -> Unit) {
+    class ListTicketViewHolder(private val itemBinding: ItemTicketBinding) :
+        RecyclerView.ViewHolder(itemBinding.root) {
+        fun onBind(uiTicket: UITicket, onEditClick: (String) -> Unit) {
             itemBinding.root.setOnClickListener {
-                itemBinding.detailView.visibility =
-                    if(itemBinding.detailView.visibility == View.GONE) {
-                        View.VISIBLE
-                    } else {
-                        View.GONE
-                    }
-            }
-            itemBinding.editBtn.setOnClickListener {
+                val visibility = itemBinding.detailView.visibility
+                val toggleTo = if (visibility == View.GONE) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
 
+                itemBinding.detailView.visibility = toggleTo
+                itemBinding.editBtn.visibility = toggleTo
             }
+
+            itemBinding.editBtn.setOnClickListener {
+                onEditClick.invoke(uiTicket.id)
+            }
+
             with(uiTicket) {
+                val netWeightText = "Net weight: $netWeight"
+                val inboundWeightText = "Inbound weight $inboundWeight"
+                val outboundWeightText = "Outbound weight: $outboundWeight"
+
                 itemBinding.dateTimeText.text = dateTime
                 itemBinding.driverNameText.text = driverName
-                itemBinding.netWeightText.text = netWeight
-                itemBinding.inboundWeightText.text = inboundWeight
-                itemBinding.outboundWeightText.text = outboundWeight
+                itemBinding.netWeightText.text = netWeightText
+                itemBinding.inboundWeightText.text = inboundWeightText
+                itemBinding.outboundWeightText.text = outboundWeightText
                 itemBinding.licenseText.text = license
             }
         }
+    }
+
+    interface ListTicketAdapterInterface {
+        fun onEditClicked(id: String)
     }
 }

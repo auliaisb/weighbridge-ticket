@@ -9,7 +9,7 @@
         android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".presentation.AddTicketPage">
+        tools:context=".presentation.AddEditTicketPage">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

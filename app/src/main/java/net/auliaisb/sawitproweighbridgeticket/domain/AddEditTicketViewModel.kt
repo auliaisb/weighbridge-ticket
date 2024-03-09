@@ -19,7 +19,7 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
-class AddTicketViewModel @Inject constructor(
+class AddEditTicketViewModel @Inject constructor(
     private val ticketService: TicketService,
     private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
@@ -32,8 +32,27 @@ class AddTicketViewModel @Inject constructor(
     private var inboundWeight: Double = 0.0
     private var outboundWeight: Double = 0.0
     private var netWeight: Double = 0.0
+    private var key: String? = null
 
-    fun addTicket(
+    fun init(ticket: Ticket?) {
+        if(ticket == null) {
+            showDate()
+            showTime()
+        } else {
+            editTicket(ticket)
+        }
+    }
+    private fun editTicket(ticket: Ticket) {
+        key = ticket.key
+        ticket.dateTime?.let {
+            selectedDateTime = Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDateTime()
+            setDate(selectedDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+            setTime(selectedDateTime.hour, selectedDateTime.minute)
+        }
+        addTicketPageListener?.populateForm(UITicket.from(ticket))
+    }
+
+    fun sendTicket(
         licenseNum: String,
         driverName: String,
     ) {
@@ -44,7 +63,7 @@ class AddTicketViewModel @Inject constructor(
         selectedDateTime = LocalDateTime.of(selectedDate, selectedTime)
 
         val ticket = Ticket(
-            id = System.nanoTime(),
+            key = key,
             dateTime = selectedDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
             licenseNumber = licenseNum,
             driverName = driverName,
@@ -54,7 +73,14 @@ class AddTicketViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            val result = withContext(dispatcher) { ticketService.addTicket(ticket) }
+            val result: Result<Boolean>
+            withContext(dispatcher) {
+                if(key == null){
+                    result = ticketService.addTicket(ticket)
+                } else {
+                    result = ticketService.editTicket(ticket)
+                }
+            }
             result.onSuccess {
                 addTicketPageListener?.hideLoading()
                 addTicketPageListener?.onSuccessSubmit()
@@ -131,11 +157,6 @@ class AddTicketViewModel @Inject constructor(
         addTicketPageListener?.setTime(strTime)
     }
 
-    fun init() {
-        showDate()
-        showTime()
-    }
-
     fun setInboundOutboundWeight(newInboundWeight: String, newOutboundWeight: String) {
         inboundWeight = try {
             newInboundWeight.toDouble()
@@ -169,5 +190,6 @@ class AddTicketViewModel @Inject constructor(
         fun setErrorOutboundWeight(stringRes: Int)
         fun setErrorNetWeight(stringRes: Int)
         fun onSuccessSubmit()
+        fun populateForm(ticket: UITicket)
     }
 }

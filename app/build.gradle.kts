@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.googleServices)
     alias(libs.plugins.hiltAndroid)
+    alias(libs.plugins.navSafeArgs)
 }
 
 android {
