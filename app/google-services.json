@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1014347653760",
+    "project_id": "weighbridgeticket-d6159",
+    "storage_bucket": "weighbridgeticket-d6159.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1014347653760:android:f4524f9dcc30723058bc65",
+        "android_client_info": {
+          "package_name": "net.auliaisb.sawitproweighbridgeticket"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiaQA4xXcSG-pGh9arhCu_vUD6B25scVc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
